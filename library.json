@@ -1,22 +1,26 @@
 {
-    "name": "NRF_HAL",
-    "description": "nRFgo SDK nRF24L01 transceiver HAL API port for Arduino",
-    "keywords": "onewire, 1-wire, arduino, nrf24l01, nordic, transceiver",
-    "authors": [
-        {
-            "name": "Piotr Stolarz",
-            "email": "pstolarz@o2.pl",
-            "maintainer": true
-        }
-    ],
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/pstolarz/nrfhal_arduino"
+  "name": "nRFgo_SDK_HAL",
+  "description": "nRFgo SDK nRF24L01 transceiver HAL API port for Arduino",
+  "keywords": "onewire, 1-wire, arduino, nrf24l01, nordic, transceiver",
+  "authors": [
+    {
+      "name": "Piotr Stolarz",
+      "email": "pstolarz@o2.pl",
+      "maintainer": true
+    }, {
+      "name": "Gerad Munsch",
+      "email": "gmunsch@unforgivendevelopment.com",
+      "maintainer": true
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/unforgiven512/nrfhal_arduino"
     },
-    "version": "1.0.0",
-    "homepage": "https://github.com/pstolarz/nrfhal_arduino",
-    "frameworks": "Arduino",
-    "examples": [
-        "examples/*/*.ino"
-    ]
+  "version": "1.0.1",
+  "homepage": "https://github.com/unforgiven512/nrfhal_arduino",
+  "frameworks": "Arduino",
+  "examples": [
+    "examples/*/*.ino"
+  ]
 }

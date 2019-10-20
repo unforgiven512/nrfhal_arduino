@@ -1,4 +1,5 @@
-/* Copyright (c) 2009 Nordic Semiconductor. All Rights Reserved.
+/*
+ * Copyright (c) 2009 Nordic Semiconductor. All Rights Reserved.
  *
  * The information contained herein is confidential property of Nordic
  * Semiconductor ASA.Terms and conditions of usage are described in detail
@@ -8,59 +9,79 @@
  * WARRENTY of ANY KIND is provided. This heading must NOT be removed from
  * the file.
  */
-/*
-   Copyright (c) 2015,2016 Piotr Stolarz for the Ardiono port
 
-   This software is distributed WITHOUT ANY WARRANTY; without even the
-   implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-   See the License for more information.
+/*
+ * Copyright (c) 2015,2016 Piotr Stolarz for the Ardiono port
+ *
+ * This software is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the License for more information.
  */
 
+
 /**
+ * \file nrf_hal.h
+ * \brief A port of the nRFgo SDK's nRF HAL API ported for use on other platforms
+ *
  * This is basically nRFgo SDK's NRF HAL API ported to Arduino SDK.
- * Note the SPI interface must be initialized before using the NRF HAL API.
  *
  * The differences are:
- * 1. Addition of hal_nrf_set_cs_pin() function, which need to be called at
- *    first (before any other NRF HALL API call) to set the SPI CS pin number.
+ * 1. Addition of hal_nrf_set_cs_pin() function, which need to be called at first (before any other NRF HALL API call)
+ *    to set the SPI CS pin number.
  * 2. Added new functions, mostly getters for already existing setters.
+ *
+ *
+ * This is the nRF24L01+ transceiver used in several Nordic Semiconductor devices. The transceiver is set up and
+ * controlled via an internal SPI interface on the chip. The HAL for the radio transceiver hides this SPI interface from
+ * the programmer.
+ *
+ * The nRF24LE1 uses the same 2.4GHz GFSK RF transceiver with embedded protocol engine (Enhanced ShockBurst&tm;) that is
+ * found in the nRF24L01+ single chip RF Transceiver.
+ *
+ * The RF Transceiver module is configured and operated through the RF transceiver map. This register map is accessed by
+ * the MCU through a dedicated on-chip Serial Peripheral interface (SPI) and is available in all power modes of the RF
+ * Transceiver module. The register map contains all configuration registers in the RF Transceiver and is accessible in
+ * all operation modes of the transceiver. The radio transceiver HAL hides this register map and the usage of the
+ * internal SPI.
+ *
+ * This HAL module contains setup functions for configurating the radio; operation functions for controlling the radio
+ * when active and for sending and receiving data; and test functions for setting the radio in test modes.
+ *
+ * \note The SPI interface must be initialized before using the NRF HAL API.
  */
 
-/**
- * This is the nRF24L01+ transceiver used in several Nordic Semiconductor
- * devices. The transceiver is set up and controlled via an internal SPI
- * interface on the chip. The HAL for the radio transceiver hides this SPI
- * interface from the programmer.
- *
- * The nRF24LE1 uses the same 2.4GHz GFSK RF transceiver with embedded protocol
- * engine (Enhanced ShockBurst&tm;) that is found in the nRF24L01+ single chip
- * RF Transceiver.
- *
- * The RF Transceiver module is configured and operated through the RF
- * transceiver map. This register map is accessed by the MCU through a dedicated
- * on-chip Serial Peripheral interface (SPI) and is available in all power modes
- * of the RF Transceiver module. The register map contains all configuration
- * registers in the RF Transceiver and is accessible in all operation modes of
- * the transceiver. The radio transceiver HAL hides this register map and the
- * usage of the internal SPI.
- *
- * This HAL module contains setup functions for configurating the radio;
- * operation functions for controlling the radio when active and for sending
- * and receiving data; and test functions for setting the radio in test modes.
- */
+#ifndef NRF_HAL_H_
+#define NRF_HAL_H_
 
-#ifndef __INO_NRF_HAL_H__
-#define __INO_NRF_HAL_H__
 
 #include <stdint.h>
 
-/* max payload size */
-#define NRF_MAX_PL         32
 
-/* nRF24L01 register details
+/**
+ * \defgroup nrf24l01_hal nRF24L01 HAL
+ *
+ * @{
  */
 
-/* nRF24L01 Instruction Definitions */
+
+
+/*! \brief The max payload size */
+#define NRF_MAX_PL 32
+
+
+/**
+ * \defgroup nrf24l01_reg_details nRF24L01 Register Details
+ *
+ * @{
+ */
+
+
+/**
+ * \defgroup nrf24l01_inst_defs nRF24L01 Instruction Definitions
+ *
+ * @{
+ */
+
 #define R_REGISTER         0x00U  /* Register read (added to register id) */
 #define W_REGISTER         0x20U  /* Register write (added to register id) */
 #define R_RX_PAYLOAD       0x61U  /* Read RX payload */
@@ -72,10 +93,19 @@
 #define R_RX_PL_WID        0x60U  /* Read top RX FIFO payload width */
 #define W_ACK_PAYLOAD      0xA8U  /* Write ACK payload */
 #define W_TX_PAYLOAD_NOACK 0xB0U  /* Write TX payload (no ACK req.) */
-#define NOP                0xFFU  /* No Operation,
-                                     used for reading status register */
+#define NOP                0xFFU  /* No Operation, used for reading status register */
 
-/* nRF24L01 Register Definitions */
+/**
+ * @}
+ */
+
+
+/**
+ * \defgroup nrf24l01_reg_defs nRF24L01 Register Definitions
+ *
+ * @{
+ */
+
 #define CONFIG        0x00U  /* nRF24L01 config register */
 #define EN_AA         0x01U  /* nRF24L01 enable Auto-Acknowledge register */
 #define EN_RXADDR     0x02U  /* nRF24L01 enable RX addresses register */
@@ -103,7 +133,24 @@
 #define DYNPD         0x1CU  /* nRF24L01 Dynamic payload setup */
 #define FEATURE       0x1DU  /* nRF24L01 Exclusive feature setup */
 
-/* CONFIG register bit definitions */
+/**
+ * @}
+ */
+
+
+/**
+ * \defgroup nrf24l01_reg_bitdefs nRF24L01 Register Bit Definitions
+ *
+ * @{
+ */
+
+
+/**
+ * \name CONFIG register bit definitions
+ *
+ * @{
+ */
+
 #define MASK_RX_DR    6     /* CONFIG register bit 6 */
 #define MASK_TX_DS    5     /* CONFIG register bit 5 */
 #define MASK_MAX_RT   4     /* CONFIG register bit 4 */
@@ -112,7 +159,16 @@
 #define PWR_UP        1     /* CONFIG register bit 1 */
 #define PRIM_RX       0     /* CONFIG register bit 0 */
 
-/* RF_SETUP register bit definitions */
+/**
+ * @}
+ */
+
+/**
+ * \name RF_SETUP register bit definitions
+ *
+ * @{
+ */
+
 #define CONT_WAVE     7     /* RF_SETUP register bit 7 */
 #define RF_DR_LOW     5     /* RF_SETUP register bit 5 */
 #define PLL_LOCK      4     /* RF_SETUP register bit 4 */
@@ -121,174 +177,238 @@
 #define RF_PWR0       1     /* RF_SETUP register bit 1 */
 #define LNA_HCURR     0     /* RF_SETUP register bit 0 */
 
-/* STATUS register bit definitions */
+/**
+ * @}
+ */
+
+/**
+ * \name STATUS register bit definitions
+ *
+ * @{
+ */
+
 #define RX_DR         6     /* STATUS register bit 6 */
 #define TX_DS         5     /* STATUS register bit 5 */
 #define MAX_RT        4     /* STATUS register bit 4 */
 #define TX_FULL       0     /* STATUS register bit 0 */
 
-/* FIFO_STATUS register bit definitions */
+/**
+ * @}
+ */
+
+/**
+ * \name FIFO_STATUS register bit definitions
+ *
+ * @{
+ */
+
 #define TX_REUSE      6     /* FIFO_STATUS register bit 6 */
 #define TX_FIFO_FULL  5     /* FIFO_STATUS register bit 5 */
 #define TX_EMPTY      4     /* FIFO_STATUS register bit 4 */
 #define RX_FULL       1     /* FIFO_STATUS register bit 1 */
 #define RX_EMPTY      0     /* FIFO_STATUS register bit 0 */
 
-/* FEATURE register bit definitions */
+/**
+ * @}
+ */
+
+/**
+ * \name FEATURE register bit definitions
+ *
+ * @{
+ */
+
 #define EN_DPL        2     /* FEATURE register bit 2 */
 #define EN_ACK_PAY    1     /* FEATURE register bit 1 */
 #define EN_DYN_ACK    0     /* FEATURE register bit 0 */
 
-/* nRF24L01 related definitions,
-   Interrupt definitions,
-   Operation mode definitions
+/**
+ * @}
  */
 
 /**
- * An enum describing the radio's irq sources.
+ * @}
+ */
+
+/**
+ * @}
+ */
+
+
+
+
+/**
+ * \defgroup nrf24l01_types_enums nRF24L01 Types and Enumerations
+ *
+ * These types and enumerations define various definitions related to the operational parameters of the \b nRF24L01(+)
+ * radio transceiver. Some examples include:
+ * + Interrupt sources
+ * + Radio power mode
+ * + Radio power level
+ * + Data rate
+ * + (etc...)
+ *
+ * @{
+ */
+
+
+/**
+ * \brief An enum describing the radio's interrupt sources
  */
 typedef enum {
-    HAL_NRF_MAX_RT = 4,     /* Max retries interrupt */
-    HAL_NRF_TX_DS,          /* TX data sent interrupt */
-    HAL_NRF_RX_DR           /* RX data received interrupt */
+	HAL_NRF_MAX_RT = 4,	/*!< Max retries interrupt */
+	HAL_NRF_TX_DS,		/*!< TX data sent interrupt */
+	HAL_NRF_RX_DR		/*!< RX data received interrupt */
 } hal_nrf_irq_source_t;
-
-/* Operation mode definitions */
 
 /**
  * An enum describing the radio's power mode.
  */
 typedef enum {
-    HAL_NRF_PTX,            /* Primary TX operation */
-    HAL_NRF_PRX             /* Primary RX operation */
+	HAL_NRF_PTX,            /* Primary TX operation */
+	HAL_NRF_PRX             /* Primary RX operation */
 } hal_nrf_operation_mode_t;
 
 /**
  * An enum describing the radio's power mode.
  */
 typedef enum {
-    HAL_NRF_PWR_DOWN,       /* Device power-down */
-    HAL_NRF_PWR_UP          /* Device power-up */
+	HAL_NRF_PWR_DOWN,       /* Device power-down */
+	HAL_NRF_PWR_UP          /* Device power-up */
 } hal_nrf_pwr_mode_t;
 
 /**
  * An enum describing the radio's output power mode's.
  */
 typedef enum {
-    HAL_NRF_18DBM,          /* Output power set to -18dBm */
-    HAL_NRF_12DBM,          /* Output power set to -12dBm */
-    HAL_NRF_6DBM,           /* Output power set to -6dBm  */
-    HAL_NRF_0DBM            /* Output power set to 0dBm   */
+	HAL_NRF_18DBM,          /* Output power set to -18dBm */
+	HAL_NRF_12DBM,          /* Output power set to -12dBm */
+	HAL_NRF_6DBM,           /* Output power set to -6dBm  */
+	HAL_NRF_0DBM            /* Output power set to 0dBm   */
 } hal_nrf_output_power_t;
 
 /**
  * An enum describing the radio's on-air data-rate.
  */
 typedef enum {
-    HAL_NRF_1MBPS,          /* Data-rate set to 1 Mbps  */
-    HAL_NRF_2MBPS,          /* Data-rate set to 2 Mbps  */
-    HAL_NRF_250KBPS         /* Data-rate set to 250 kbps*/
+	HAL_NRF_1MBPS,          /* Data-rate set to 1 Mbps  */
+	HAL_NRF_2MBPS,          /* Data-rate set to 2 Mbps  */
+	HAL_NRF_250KBPS         /* Data-rate set to 250 kbps*/
 } hal_nrf_datarate_t;
 
 /**
  * An enum describing the radio's CRC mode.
  */
 typedef enum {
-    HAL_NRF_CRC_OFF,    /* CRC check disabled */
-    HAL_NRF_CRC_8BIT,   /* CRC check set to 8-bit */
-    HAL_NRF_CRC_16BIT   /* CRC check set to 16-bit */
+	HAL_NRF_CRC_OFF,    /* CRC check disabled */
+	HAL_NRF_CRC_8BIT,   /* CRC check set to 8-bit */
+	HAL_NRF_CRC_16BIT   /* CRC check set to 16-bit */
 } hal_nrf_crc_mode_t;
 
 /**
  * An enum describing the read/write payload command.
  */
 typedef enum {
-    HAL_NRF_TX_PLOAD = 7,   /* TX payload definition */
-    HAL_NRF_RX_PLOAD,       /* RX payload definition */
-    HAL_NRF_ACK_PLOAD
+	HAL_NRF_TX_PLOAD = 7,   /* TX payload definition */
+	HAL_NRF_RX_PLOAD,       /* RX payload definition */
+	HAL_NRF_ACK_PLOAD
 } hal_nrf_pload_command_t;
+
 
 #if 0
 /**
- * Structure containing the radio's address map.
+ * \brief Structure containing the radio's address map.
  *
- * Pipe0 contains 5 unique address bytes, while pipe[1..5] share the 4 MSB
- * bytes, set in pipe1. Remember that the LSB byte for all pipes have to be
- * unique!
+ * Pipe0 contains 5 unique address bytes, while pipe[1..5] share the 4 most significant bytes, set in pipe1.
+ *
+ * \attention Remember that the least significant byte for each pipe must be unique!
  */
-/* nRF24L01 Address struct */
 typedef struct {
-    uint8_t p0[5];            /* Pipe0 address, 5 bytes */
-    uint8_t p1[5];            /* Pipe1 address, 5 bytes,
-                                 4 MSB bytes shared for pipe 1 to 5 */
-    uint8_t p2[1];            /* Pipe2 address, 1 byte */
-    uint8_t p3[1];            /* Pipe3 address, 1 byte */
-    uint8_t p4[1];            /* Pipe3 address, 1 byte */
-    uint8_t p5[1];            /* Pipe3 address, 1 byte */
-    uint8_t tx[5];            /* TX address, 5 byte */
+	uint8_t p0[5];	/*!< Pipe0 address, 5 bytes */
+	uint8_t p1[5];	/*!< Pipe1 address, 5 bytes; 4 most significant bytes shared for pipes 1 through 5 */
+	uint8_t p2[1];	/*!< Pipe2 address, 1 byte */
+	uint8_t p3[1];	/*!< Pipe3 address, 1 byte */
+	uint8_t p4[1];	/*!< Pipe3 address, 1 byte */
+	uint8_t p5[1];	/*!< Pipe3 address, 1 byte */
+	uint8_t tx[5];	/*!< TX address, 5 bytes */
 } hal_nrf_l01_addr_map;
 #endif
 
 /**
- * An enum describing the nRF24L01 pipe addresses and TX address.
+ * \brief An enum describing the nRF24L01 pipe addresses and TX address.
  */
 typedef enum {
-    HAL_NRF_PIPE0 = 0,          /* Select pipe0 */
-    HAL_NRF_PIPE1,              /* Select pipe1 */
-    HAL_NRF_PIPE2,              /* Select pipe2 */
-    HAL_NRF_PIPE3,              /* Select pipe3 */
-    HAL_NRF_PIPE4,              /* Select pipe4 */
-    HAL_NRF_PIPE5,              /* Select pipe5 */
-    HAL_NRF_TX,                 /* Refer to TX address*/
-    HAL_NRF_ALL = 0xFF          /* Close or open all pipes*/
+	HAL_NRF_PIPE0 = 0,	/*!< Select pipe0 */
+	HAL_NRF_PIPE1,		/*!< Select pipe1 */
+	HAL_NRF_PIPE2,		/*!< Select pipe2 */
+	HAL_NRF_PIPE3,		/*!< Select pipe3 */
+	HAL_NRF_PIPE4,		/*!< Select pipe4 */
+	HAL_NRF_PIPE5,		/*!< Select pipe5 */
+	HAL_NRF_TX,			/*!< Refer to TX address */
+	HAL_NRF_ALL = 0xFF	/*!< Close or open all pipes */
 } hal_nrf_address_t;
 
 /**
- * An enum describing the radio's address width.
+ * \brief An enum describing the radio's address width.
  */
 typedef enum {
-    HAL_NRF_AW_3BYTES = 3,      /* Set address width to 3 bytes */
-    HAL_NRF_AW_4BYTES,          /* Set address width to 4 bytes */
-    HAL_NRF_AW_5BYTES           /* Set address width to 5 bytes */
+	HAL_NRF_AW_3BYTES = 3,	/*!< Set address width to 3 bytes */
+	HAL_NRF_AW_4BYTES,		/*!< Set address width to 4 bytes */
+	HAL_NRF_AW_5BYTES		/*!< Set address width to 5 bytes */
 } hal_nrf_address_width_t;
 
 /**
- * Transceiver context.
+ * \brief Transceiver context
+ *
+ * \note The following members have been omitted:
+ *       + \b STATUS
+ *       + \b OBSERVE_TX
+ *       + \b CD
+ *       + \b FIFO_STATUS
  */
 typedef struct {
-    uint8_t config;
-    uint8_t en_aa;
-    uint8_t en_rxaddr;
-    uint8_t setup_aw;
-    uint8_t setup_retr;
-    uint8_t rf_ch;
-    uint8_t rf_setup;
-    /* STATUS, OBSERVE_TX, CD omitted */
-    uint8_t rx_addr_p0[5];
-    uint8_t rx_addr_p1[5];
-    uint8_t rx_addr_p2;
-    uint8_t rx_addr_p3;
-    uint8_t rx_addr_p4;
-    uint8_t rx_addr_p5;
-    uint8_t tx_addr[5];
-    uint8_t rx_pw_p0;
-    uint8_t rx_pw_p1;
-    uint8_t rx_pw_p2;
-    uint8_t rx_pw_p3;
-    uint8_t rx_pw_p4;
-    uint8_t rx_pw_p5;
-    /* FIFO_STATUS omitted */
-    uint8_t dynpd;
-    uint8_t feature;
+	uint8_t config;
+	uint8_t en_aa;
+	uint8_t en_rxaddr;
+	uint8_t setup_aw;
+	uint8_t setup_retr;
+	uint8_t rf_ch;
+	uint8_t rf_setup;
+	uint8_t rx_addr_p0[5];
+	uint8_t rx_addr_p1[5];
+	uint8_t rx_addr_p2;
+	uint8_t rx_addr_p3;
+	uint8_t rx_addr_p4;
+	uint8_t rx_addr_p5;
+	uint8_t tx_addr[5];
+	uint8_t rx_pw_p0;
+	uint8_t rx_pw_p1;
+	uint8_t rx_pw_p2;
+	uint8_t rx_pw_p3;
+	uint8_t rx_pw_p4;
+	uint8_t rx_pw_p5;
+	uint8_t dynpd;
+	uint8_t feature;
 } hal_nrf_ctx_t;
 
-/*
- * Setup functions prototypes
+/**
+ * @}
+ */
+
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+
+/**
+ * \defgroup nrf24l01_hal_setup_func nRF24L01 Setup Functions
+ *
+ * @{
  */
 
 /**
- * Set SPI CS (slave select) pin number. This function MUST be called at first
- * before any subsequent NRF HAL API calls.
+ * Set SPI CS (slave select) pin number.
+ *
+ * This function MUST be called at first before any subsequent NRF HAL API calls.
  */
 void hal_nrf_set_cs_pin(int cs);
 
@@ -370,8 +490,7 @@ void hal_nrf_setup_dynamic_payload(uint8_t setup);
  * @param tx_pload Pointer to the payload data.
  * @param length Size of the data to transmit.
  */
-void hal_nrf_write_ack_payload(
-    uint8_t pipe, const uint8_t *tx_pload, uint8_t length);
+void hal_nrf_write_ack_payload(uint8_t pipe, const uint8_t *tx_pload, uint8_t length);
 
 /**
  * Set radio's RF channel.
@@ -553,8 +672,7 @@ uint8_t hal_nrf_get_address(uint8_t address, uint8_t *addr);
  * @param pload_width RX payload length. Set to max payload length (NRF_MAX_PL)
  * in case if dynamic feature is enabled.
  */
-void hal_nrf_config_rx_pipe(hal_nrf_address_t pipe_num,
-    const uint8_t *addr, bool auto_ack, uint8_t pload_width);
+void hal_nrf_config_rx_pipe(hal_nrf_address_t pipe_num, const uint8_t *addr, bool auto_ack, uint8_t pload_width);
 
 /**
  * Configure TX transmission by:
@@ -568,8 +686,7 @@ void hal_nrf_config_rx_pipe(hal_nrf_address_t pipe_num,
  * @param retr Number of retransmits, 0 means retransmit OFF.
  * @param delay Retransmit delay in usec (in range 250-4000 with step 250).
  */
-void hal_nrf_config_tx(const uint8_t *addr,
-    hal_nrf_output_power_t power, uint8_t retr, uint16_t delay);
+void hal_nrf_config_tx(const uint8_t *addr, hal_nrf_output_power_t power, uint8_t retr, uint16_t delay);
 
 /**
  * Enable or disable interrupt for the radio.
@@ -641,8 +758,15 @@ void hal_nrf_set_power_mode(hal_nrf_pwr_mode_t pwr_mode);
  */
 hal_nrf_pwr_mode_t hal_nrf_get_power_mode(void);
 
-/*
- * Status functions prototypes
+/**
+ * @}
+ */
+
+
+/**
+ * \defgroup nrf24l01_hal_status_func nRF24L01 Status Functions
+ *
+ * @{
  */
 
 /**
@@ -747,24 +871,38 @@ uint8_t hal_nrf_get_transmit_attempts(void);
 uint8_t hal_nrf_get_packet_lost_ctr(void);
 
 /**
- * Get the carrier detect flag.
+ * \brief Get the carrier detect flag
  *
- * Use this function to get the carrier detect flag, used to detect stationary
- * disturbance on selected RF channel.
+ * Use this function to get the carrier detect flag, used to detect stationary disturbance on selected RF channel.
  *
- * @return Carrier Detect.
- * @retval FALSE Carrier NOT Detected,
- * @retval TRUE Carrier Detected.
+ * \return A boolean value, containing the state of the Carrier Detect flag.
+ * \retval	false	A carrier was \e NOT detected
+ * \retval	true	A carrier was detected
  */
 bool hal_nrf_get_carrier_detect(void);
 
 /**
- * RPD used for nRF24l01+
+ * \brief Get the status of the RPD (used for nRF24l01+)
+ *
+ * This is a macro function, which simply calls \c hal_nrf_get_carrier_detect() but is suited for the \b nRF24L01+ chip,
+ * as it has had the \b CD (carrier detect) feature replaced with the \b RPD (receive power detection) feature.
+ *
+ * \return A boolean value, indicating whether there was a radio signal above the predefined threshold on the channel.
+ * \retval	false	There was \e NOT any radio signal which exceeded the threshold detected
+ * \retval	true	A radio signal which exceeded the threshold in power level was detected
  */
-#define hal_nrf_get_rcv_pwr_detector() hal_nrf_get_carrier_detect()
+#define hal_nrf_get_rcv_pwr_detector()																				\
+		hal_nrf_get_carrier_detect()
 
-/*
- * Data operation functions prototypes
+/**
+ * @}
+ */
+
+
+/**
+ * \defgroup nrf24l01_hal_data_op_func nRF24L01 Data Operation Functions
+ *
+ * @{
  */
 
 /**
@@ -852,65 +990,106 @@ void hal_nrf_flush_rx(void);
 void hal_nrf_flush_tx(void);
 
 /**
- * No Operation command.
+ * \brief No Operation command
  *
  * Use this function to receive the radio's status register.
  *
- * @return Status register.
+ * \return The contents of the radio's \b STATUS register.
  */
 uint8_t hal_nrf_nop(void);
 
-#define hal_nrf_get_status() hal_nrf_nop()
+/**
+ * \brief Retrieve the contents of the radio's status register
+ *
+ * This macro function sends a \c NOP instruction to the radio, which causes the radio's status register to be returned.
+ *
+ * \return The contents of the radio's \b STATUS register.
+ */
+#define hal_nrf_get_status()																						\
+		hal_nrf_nop()
 
-/*
- * Test functions prototypes
+/**
+ * @}
+ */
+
+
+/**
+ * \defgroup nrf24l01_hal_test_func nRF24L01 Test Functions
+ *
+ * @{
  */
 
 /**
- * Set radio's PLL mode.
+ * \brief Set the radio's PLL mode
  *
- * Use this function to either LOCK or UNLOCK the radio's PLL.
+ * Use this function to either \b LOCK or \b UNLOCK the radio's PLL.
  *
- * @param pll_lock PLL locked, TRUE or FALSE.
+ * \param[in]	pll_lock	Whether the PLL should locked (true) or unlocked (false).
  */
 void hal_nrf_set_pll_mode(bool pll_lock);
 
 /**
- * Get radio's PLL mode.
+ * \brief Get the radio's PLL state
+ *
+ * \return A boolean value, indicating the state of the radio's PLL
+ * \retval	true	The radio's PLL is \b LOCKED
+ * \retval	false	The radio's PLL is \e not \b LOCKED
  */
 bool hal_nrf_get_pll_mode(void);
 
 /**
- * Enables continuous carrier transmit.
+ * \brief Enables continuous carrier transmit
  *
- * Use this function to enable or disable continuous carrier transmission.
+ * Use this function to enable or disable continuous \b CW (carrier wave) transmission.
  *
- * @param enable Enable continuous carrier.
+ * \param[in]	enable	Enable continuous carrier wave
  */
 void hal_nrf_enable_continious_wave(bool enable);
 
 /**
- * Check if continuous carrier transmit is enabled.
+ * \brief Check if continuous wave carrier transmit is enabled
+ *
+ * \return A boolean value, indicating the status of the CW transmission state.
+ * \retval	true	The radio is transmitting a CW
+ * \retval	false	The radio is \e not transmitting a CW
  */
 bool hal_nrf_is_continious_wave_enabled(void);
 
-/*
- * Auxiliary functions prototypes
+/**
+ * @}
+ */
+
+
+/**
+ * \defgroup nrf24l01_hal_aux_func nRF24L01 Auxiliary Functions
+ *
+ * @{
  */
 
 /**
- * Save transceiver context.
+ * \brief Save transceiver context
  *
- * @param *p_ctx Pointer to a struct where the context will be written.
+ * \param[out]	p_ctx	Pointer to a \p hal_nrf_ctx_t struct where the context will be written
  */
 void hal_nrf_save_ctx(hal_nrf_ctx_t *p_ctx);
 
 /**
- * Read transmitter register content.
+ * \brief Read transmitter register content
  *
- * @param reg Register to read.
- * @return Register contents.
+ * \param[in]	reg	The register to read
+ *
+ * \return Register contents.
  */
 uint8_t hal_nrf_read_reg(uint8_t reg);
 
-#endif /* __INO_NRF_HAL_H__ */
+
+/**
+ * @}
+ */
+
+/**
+ * @}
+ */
+
+
+#endif	/* !NRF_HAL_H_ */
