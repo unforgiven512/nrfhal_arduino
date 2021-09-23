@@ -92,8 +92,8 @@
 #define ACTIVATE           0x50U  /* Activate features (obsolete) */
 #define R_RX_PL_WID        0x60U  /* Read top RX FIFO payload width */
 #define W_ACK_PAYLOAD      0xA8U  /* Write ACK payload */
-#define W_TX_PAYLOAD_NOACK 0xB0U  /* Write TX payload (no ACK req.) */
-#define NOP                0xFFU  /* No Operation, used for reading status register */
+#define W_TX_PAYLOAD_NOACK	0xB0U  /* Write TX payload (no ACK req.) */
+#define NOP					0xFFU  /* No Operation, used for reading status register */
 
 /**
  * @}
@@ -159,6 +159,20 @@
 #define PWR_UP        1     /* CONFIG register bit 1 */
 #define PRIM_RX       0     /* CONFIG register bit 0 */
 
+union nrf_reg_config {
+	struct {
+		unsigned RESERVED_7:1;
+		unsigned MASK_RX_DR:1;
+		unsigned MASK_TX_DS:1;
+		unsigned MASK_MAX_RT:1;
+		unsigned EN_CRC:1;
+		unsigned CRCO:1;
+		unsigned PWR_UP:1;
+		unsigned PRIM_RX:1;
+	};
+	uint8_t CONFIG;
+};
+
 /**
  * @}
  */
@@ -177,6 +191,21 @@
 #define RF_PWR0       1     /* RF_SETUP register bit 1 */
 #define LNA_HCURR     0     /* RF_SETUP register bit 0 */
 
+
+
+union nrf_reg_rf_setup {
+	struct {
+		unsigned CONT_WAVE:1;
+		unsigned RESERVED_6:1;
+		unsigned RF_DR_LOW:1;
+		unsigned PLL_LOCK:1;
+		unsigned RF_DR_HIGH:1;
+		unsigned RF_POWER:2;
+		unsigned OBSOLETE_OR_LNA_HCURR:1;
+	};
+	uint8_t RF_SETUP;
+};
+
 /**
  * @}
  */
@@ -191,6 +220,18 @@
 #define TX_DS         5     /* STATUS register bit 5 */
 #define MAX_RT        4     /* STATUS register bit 4 */
 #define TX_FULL       0     /* STATUS register bit 0 */
+
+union nrf_reg_status {
+	struct {
+		unsigned RESERVED_7:1;
+		unsigned RX_DR:1;
+		unsigned TX_DS:1;
+		unsigned MAX_RT:1;
+		unsigned RX_P_NO:3;
+		unsigned TX_FULL:1;
+	};
+	uint8_t STATUS;
+};
 
 /**
  * @}
@@ -221,6 +262,16 @@
 #define EN_DPL        2     /* FEATURE register bit 2 */
 #define EN_ACK_PAY    1     /* FEATURE register bit 1 */
 #define EN_DYN_ACK    0     /* FEATURE register bit 0 */
+
+union nrf_reg_feature {
+	struct {
+		unsigned RESERVED_7_3:5;
+		unsigned EN_DPL:1;
+		unsigned EN_ACK_PAY:1;
+		unsigned EN_DYN_ACK:1;
+	};
+	uint8_t FEATURE;
+};
 
 /**
  * @}
@@ -281,19 +332,23 @@ typedef enum {
  * An enum describing the radio's output power mode's.
  */
 typedef enum {
-	HAL_NRF_18DBM,          /* Output power set to -18dBm */
-	HAL_NRF_12DBM,          /* Output power set to -12dBm */
-	HAL_NRF_6DBM,           /* Output power set to -6dBm  */
-	HAL_NRF_0DBM            /* Output power set to 0dBm   */
+	HAL_NRF_18DBM = 0,          /* Output power set to -18dBm */
+	HAL_NRF_MIN_DBM = 0,
+	HAL_NRF_12DBM = 1,          /* Output power set to -12dBm */
+	HAL_NRF_6DBM = 2,           /* Output power set to -6dBm  */
+	HAL_NRF_0DBM = 3,            /* Output power set to 0dBm   */
+	HAL_NRF_MAX_DBM = 3
 } hal_nrf_output_power_t;
 
 /**
  * An enum describing the radio's on-air data-rate.
  */
 typedef enum {
-	HAL_NRF_1MBPS,          /* Data-rate set to 1 Mbps  */
-	HAL_NRF_2MBPS,          /* Data-rate set to 2 Mbps  */
-	HAL_NRF_250KBPS         /* Data-rate set to 250 kbps*/
+	HAL_NRF_1MBPS = 0,          /* Data-rate set to 1 Mbps  */
+	HAL_NRF_2MBPS = 1,          /* Data-rate set to 2 Mbps  */
+	HAL_NRF_SPD_MAX = 1,
+	HAL_NRF_250KBPS = 2,         /* Data-rate set to 250 kbps*/
+	HAL_NRF_SPD_MIN = 2
 } hal_nrf_datarate_t;
 
 /**
