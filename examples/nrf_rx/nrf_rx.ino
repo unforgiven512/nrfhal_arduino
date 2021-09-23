@@ -30,53 +30,49 @@ static int cnt = 0;
 static uint8_t led_val = LOW;
 
 #define toggle_led() \
-    digitalWrite(LED_PIN, (led_val==LOW ? (led_val=HIGH) : (led_val=LOW)))
+		digitalWrite(LED_PIN, (led_val==LOW ? (led_val=HIGH) : (led_val=LOW)))
 
 
-void setup()
-{
-    // CE as output
-    pinMode(CE_PIN, OUTPUT);
-    digitalWrite(CE_PIN, LOW);
+void setup() {
+	// CE as output
+	pinMode(CE_PIN, OUTPUT);
+	digitalWrite(CE_PIN, LOW);
 
-    // init LED
-    pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, led_val);
+	// init LED
+	pinMode(LED_PIN, OUTPUT);
+	digitalWrite(LED_PIN, led_val);
 
 #if INFO_ON_SERIAL
-    Serial.begin(115200);
+	Serial.begin(115200);
 #endif
 
-    // SPI init
-    SPI.begin();
-    SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+	// SPI init
+	SPI.begin();
+	SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
 
-    // init NRF HAL
-    hal_nrf_set_cs_pin(CS_PIN);
+	// init NRF HAL
+	hal_nrf_set_cs_pin(CS_PIN);
 
-    restart_rx();
+	restart_rx();
 
 #if INFO_ON_SERIAL
-    uint8_t addr[5];
-    char sp_buf[48];
+	uint8_t addr[5];
+	char sp_buf[48];
 
-    hal_nrf_get_address(HAL_NRF_PIPE0, addr);
-    sprintf(sp_buf, "P0 addr: %02x:%02x:%02x:%02x:%02x\r\n",
-        addr[0], addr[1], addr[2], addr[3], addr[4]);
-    Serial.print(sp_buf);
+	hal_nrf_get_address(HAL_NRF_PIPE0, addr);
+	sprintf(sp_buf, "P0 addr: %02x:%02x:%02x:%02x:%02x\r\n", addr[0], addr[1], addr[2], addr[3], addr[4]);
+	Serial.print(sp_buf);
 
     Serial.print("Tuned up, waiting for messages...\r\n");
 #endif
 }
 
 /* RX loop */
-void loop()
-{
+void loop() {
     uint8_t irq_flg;
 
     irq_flg = hal_nrf_get_clear_irq_flags();
-    if(irq_flg & (1U<<HAL_NRF_RX_DR))
-    {
+    if (irq_flg & (1U<<HAL_NRF_RX_DR)) {
         /* read RX FIFO of received messages */
         while(!hal_nrf_rx_fifo_empty())
         {
